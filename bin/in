@@ -5,6 +5,7 @@ exec 3>&1 # use fd 3 for script output
 exec 1>&2 # send normal stdout to stderr for logging
 jq -M -S . < /dev/stdin > /tmp/input
 
+echo "Script name: "$0
 cd $1
 
 mkdir -p /root/.kube
@@ -33,17 +34,16 @@ fi
 # get kube resource id
 RESOURCE_TYPE=$(jq -r .source.resource_type < /tmp/input)
 RESOURCE_NAME=$(jq -r .source.resource_name < /tmp/input)
+RESOURCE_PATH=$(jq -r .params.resource_path < /tmp/input)
 
 if [[ -z "$RESOURCE_TYPE" ]] || [[ -z "$RESOURCE_NAME" ]]; then
     result=""
 else
     export KUBECTL
 
-    RESOURCE="$RESOURCE_TYPE/$RESOURCE_NAME"
-
-    IMG=$($KUBECTL get -o json $RESOURCE | jq -r '.spec.template.spec.containers[0].image')
-
+    IMG=$($KUBECTL get -o json deployment $RESOURCE_NAME | jq -r '.spec.template.spec.containers[0].image')
     result="$(jq -n "{version:{container:\"$IMG\"}}")"
+    result_details=$($KUBECTL get -o json deployment $RESOURCE_NAME)
 fi
-
+echo $result_details
 echo "$result" | jq -s add  >&3

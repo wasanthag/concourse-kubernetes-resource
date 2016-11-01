@@ -75,7 +75,7 @@ IMG_FILE=$(jq -r .params.image_name < /tmp/input)
 IMG=$(cat $IMG_FILE)
 TAG_FILE=$(jq -r .params.image_tag < /tmp/input)
 TAG=$(cat $TAG_FILE)
-IMG="$IMG:$TAG"
+#IMG="$IMG:$TAG"
 
 # get kube resource id
 RESOURCE_TYPE=$(jq -r .source.resource_type < /tmp/input)
